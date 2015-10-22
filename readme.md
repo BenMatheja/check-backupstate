@@ -1,9 +1,8 @@
-Check Backup State
-###################
-Check Backup Status for employees by parsing folders last modified date
-traverses /srv/backup and /srv/sftp
+#Check Backup State
+Check employee's backups by parsing folders last modified date
 
-using the blacklist file, for all users not obliged to do timemachine backups (system users as well)
-using the linux_users file, for all users who are obliged to do sftp backups
-
-reports into check_backupstate.log
+##Requirements
+The following files are required to set up
+*blacklist file, for all users not obliged to do timemachine backups (system users as well)
+*linux_users file, for all users who are obliged to do sftp backups
+*check_backupstate.log for reporting purposes
