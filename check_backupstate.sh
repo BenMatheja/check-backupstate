@@ -97,6 +97,25 @@ total_active_backup_counter=`expr $tm_active_backup_counter + $sf_active_backup_
 total_old_backup_counter=`expr $tm_old_backup_counter + $sf_old_backup_counter`
 total_not_having_counter=`expr $tm_not_having_counter + $sf_not_having_counter`
 total_backup_succesful_quota=$(bc <<< "scale=2;$(cat total_active_backup_counter)/$(cat total_users_checked)" | awk '{printf "%f", $0}')
+
+#Write into Logfile
+infotxt="\nTotal Users Checked: $total_users_checked \nActive Backups found: $total_active_backup_counter \nOutdated Backups found: $total_old_backup_counter \nUsers not having backups: $total_not_having_counter \nBackups Successful Quota: $total backup_succesfull_quota\nFor more information see /home/nagios/check_backupstate.log"
+echo -e "$infotxt" >> check_backupstate.log
+
+#Reporting for Icinga
+if [ $(echo "$backup_succesfull_quota < $threshold_warn" | bc -l) -eq 1 ] && [ $(echo "$backup_succesfull_quota > $threshold_crit" | bc -l) -eq 1 ]; then
+	status=1
+	statustxt=WARN
+elif [ $(echo "$backup_succesfull_quota < $threshold_warn" | bc -l) -eq 1 ] && [ $(echo "$backup_succesfull_quota < $threshold_crit" | bc -l) -eq 1 ]; then
+	status=2
+	statustxt=CRITICAL
+else
+	status=0
+	statustxt=OK
+fi
+echo -e "TimeMachine Backup is $statustxt $infotxt"
+
 #Cleanup
-rm tm_users_checked tm_active_backup_counter tm_old_backup_counter tm_not_having_counter sf_users_checked sf_active_backup_counter sf_old_backup_counter sf_not_having_counter passwd_out
+rm tm_users_checked tm_active_backup_counter tm_old_backup_counter tm_not_having_counter sf_users_checked sf_active_backup_counter sf_old_backup_counter sf_not_having_counter passwd_out total_backup_succesful_quota
+exit $status
 
