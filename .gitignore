@@ -1,2 +1,5 @@
 blacklist
 linux_users
+check-sftpstate/
+check-tmstate/
+.vagrant/
