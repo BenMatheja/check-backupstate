@@ -1,7 +1,7 @@
 #!/bin/bash
 #Configuration
 timespan=1814400
-threshold_warn=0.70
+threshold_warn=0.8
 threshold_crit=0.25
 now=$(date +%s)
 cd /home/nagios/check-backupstate
