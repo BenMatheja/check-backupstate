@@ -19,43 +19,47 @@ echo "0" >> total_active_backup_counter
 echo "0" >> total_old_backup_counter
 echo "0" >> total_not_having_counter
 echo "0" >> total_backup_succesful_quota
+
 #Create lists
 touch tm_old_backup_users tm_not_having_backup_users tm_having_multiple_users sf_old_backup_users sf_not_having_backup_users sf_having_multiple_users
+
 #Check TimeMachine in /srv/backup
-#echo -e "\n$(date +'%a %d %b - %T') Check Timemachine Backup Success"
+echo -e "\n$(date +'%a %d %b - %T') Check Timemachine Backup Success"
 
 cat /etc/passwd | cut -f1 -d : > passwd_out
 grep -Fxv -f blacklist passwd_out | while read LINE
 do
-	#echo "$(date +'%a %d %b - %T') Checking Backup Status for $LINE " >> check_tmstate.log
 	users_checked=$((users_checked + 1))
 	echo $users_checked > tm_users_checked
-	#if there is a Backup
-	if [ $( ls -l /srv/backup | grep -o $LINE | wc -l) -gt 0 ]; then
-	#Are there multiple dates? If yes, skip to next iteration of while loop
-		if [ $(ls --full-time /srv/backup | grep $LINE | awk '{print $6}' | wc -l) -gt 1 ]; then
-			#echo "$(date +'%a %d %b - %T') $LINE is having multiple backup folders"
-			echo "$LINE" >> tm_having_multiple_users
+	#if there is a Folder belonging to user
+	if [ $( ls -l /srv/backup | awk '{print $3}' | grep -o $LINE | wc -l) -gt 0 ]; then
+    
+    #Are there multiple folders belonging to this user?
+		if [ $(ls -l /srv/backup | awk '{print $3}' | grep -o $LINE | wc -l) -gt 1 ]; then
+			 echo "$LINE" >> tm_having_multiple_users
 			continue
 	#Calculate epoch from last_backup
 		else
-			last_backup=$(date -d $(ls --full-time /srv/backup | grep $LINE | awk '{print $6}') +%s)
+            folder=$(ls -l /srv/backup | grep $LINE | awk '{print $9}')
+            directory="/srv/backup/"
+			last_backup=$( stat --format %Y $(ls -t $(find $directory$folder -type f) | head -n 1) )
 		fi
+        
 	#Calculate Delta between now and last_backup
 		delta=`expr $now - $last_backup`
 	#Transform 3 weeks in seconds and compare against delta 3weeks=1814400
 		if [ $delta -gt $timespan ]; then
-			#echo "$(date +'%a %d %b - %T') $LINE is having old backup"
+			echo "$(date +'%a %d %b - %T') $LINE old backup"
 			old_backup_counter=$((old_backup_counter + 1))
 			echo "$LINE" >> tm_old_backup_users
 			echo $old_backup_counter > tm_old_backup_counter
 		else
-			#echo "$(date +'%a %d %b - %T') $LINE is having active Backup"
+			echo "$(date +'%a %d %b - %T') $LINE active Backup"
 			active_backup_counter=$((active_backup_counter + 1))
 			echo $active_backup_counter > tm_active_backup_counter
 		fi
 	else
-		#echo "$(date +'%a %d %b - %T') $LINE is not having a Backup"
+		echo "$(date +'%a %d %b - %T') $LINE no Backup"
 		not_having_counter=$((not_having_counter + 1))
 		echo "$LINE" >> tm_not_having_backup_users
 		echo $not_having_counter > tm_not_having_counter
@@ -69,38 +73,38 @@ tm_old_backup_counter=$(cat tm_old_backup_counter)
 tm_not_having_counter=$(cat tm_not_having_counter)
 
 #----------------------------------------------------------------------------------------------------------
-#echo -e "\n$(date +'%a %d %b - %T') Check SFTP Backup Success" >> check_backupstate.log
+echo -e "\n$(date +'%a %d %b - %T') Check SFTP Backup Success"
 grep -Fx -f blacklist linux_users | while read LINE
 do
-	#echo "$(date +'%a %d %b - %T') Checking Backup Status for $LINE " >> check_tmstate.log
 	users_checked=$((users_checked + 1))
 	echo $users_checked > sf_users_checked
 	#if there is a Backup
-	if [ $( ls -l /srv/sftp | grep -o $LINE | wc -l) -gt 0 ]; then
+	if [ $( ls -l /srv/sftp | awk '{print $3}' | grep -o $LINE | wc -l) -gt 0 ]; then
 	#Are there multiple dates? If yes, skip to next iteration of while loop
-		if [ $(ls --full-time /srv/sftp | grep $LINE | awk '{print $6}' | wc -l) -gt 1 ]; then
-			#echo "$(date +'%a %d %b - %T') $LINE is having multiple backup folders" >> check_backupstate.log
+		if [ $( ls -l /srv/sftp | awk '{print $3}' | grep -o $LINE | wc -l) -gt 1 ]; then
 			echo "$LINE" >> sf_having_multiple_users
 			continue
 	#Calculate epoch from last_backup
 		else
-			last_backup=$(date -d $(ls --full-time /srv/sftp | grep $LINE | awk '{print $6}') +%s)
+			folder=$(ls -l /srv/sftp | grep $LINE | awk '{print $9}')
+            directory="/srv/sftp/"
+			last_backup=$( stat --format %Y $(ls -t $(find $directory$folder -type f) | head -n 1) )
 		fi
 	#Calculate Delta between now and last_backup
 		delta=`expr $now - $last_backup`
 	#Transform 3 weeks in seconds and compare against delta 3weeks=1814400
 		if [ $delta -gt $timespan ]; then
-			#echo "$(date +'%a %d %b - %T') $LINE is having old backup" >> check_backupstate.log
+			echo "$(date +'%a %d %b - %T') $LINE old backup"
 			echo "$LINE" >> sf_old_backup_users
 			old_backup_counter=$((old_backup_counter + 1))
 			echo $old_backup_counter > sf_old_backup_counter
 		else
-			#echo "$(date +'%a %d %b - %T') $LINE is having active Backup" >> check_backupstate.log
+			echo "$(date +'%a %d %b - %T') $LINE active Backup" 
 			active_backup_counter=$((active_backup_counter + 1))
 			echo $active_backup_counter > sf_active_backup_counter
 		fi
 	else
-		#echo "$(date +'%a %d %b - %T') $LINE is not having a Backup" >> check_backupstate.log
+		echo "$(date +'%a %d %b - %T') $LINE no Backup"
 		echo "$LINE" >> sf_not_having_backup_users
 		not_having_counter=$((not_having_counter + 1))
 		echo $not_having_counter > sf_not_having_counter
