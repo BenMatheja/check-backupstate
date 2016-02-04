@@ -49,17 +49,14 @@ do
 		delta=`expr $now - $last_backup`
 	#Transform 3 weeks in seconds and compare against delta 3weeks=1814400
 		if [ $delta -gt $timespan ]; then
-			echo "$(date +'%a %d %b - %T') $LINE old backup"
 			old_backup_counter=$((old_backup_counter + 1))
 			echo "$LINE" >> tm_old_backup_users
 			echo $old_backup_counter > tm_old_backup_counter
 		else
-			echo "$(date +'%a %d %b - %T') $LINE active Backup"
 			active_backup_counter=$((active_backup_counter + 1))
 			echo $active_backup_counter > tm_active_backup_counter
 		fi
 	else
-		echo "$(date +'%a %d %b - %T') $LINE no Backup"
 		not_having_counter=$((not_having_counter + 1))
 		echo "$LINE" >> tm_not_having_backup_users
 		echo $not_having_counter > tm_not_having_counter
@@ -94,17 +91,14 @@ do
 		delta=`expr $now - $last_backup`
 	#Transform 3 weeks in seconds and compare against delta 3weeks=1814400
 		if [ $delta -gt $timespan ]; then
-			echo "$(date +'%a %d %b - %T') $LINE old backup"
 			echo "$LINE" >> sf_old_backup_users
 			old_backup_counter=$((old_backup_counter + 1))
 			echo $old_backup_counter > sf_old_backup_counter
 		else
-			echo "$(date +'%a %d %b - %T') $LINE active Backup" 
 			active_backup_counter=$((active_backup_counter + 1))
 			echo $active_backup_counter > sf_active_backup_counter
 		fi
 	else
-		echo "$(date +'%a %d %b - %T') $LINE no Backup"
 		echo "$LINE" >> sf_not_having_backup_users
 		not_having_counter=$((not_having_counter + 1))
 		echo $not_having_counter > sf_not_having_counter
