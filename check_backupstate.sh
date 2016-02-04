@@ -24,8 +24,6 @@ echo "0" >> total_backup_succesful_quota
 touch tm_old_backup_users tm_not_having_backup_users tm_having_multiple_users sf_old_backup_users sf_not_having_backup_users sf_having_multiple_users
 
 #Check TimeMachine in /srv/backup
-echo -e "\n$(date +'%a %d %b - %T') Check Timemachine Backup Success"
-
 cat /etc/passwd | cut -f1 -d : > passwd_out
 grep -Fxv -f blacklist passwd_out | while read LINE
 do
@@ -70,7 +68,6 @@ tm_old_backup_counter=$(cat tm_old_backup_counter)
 tm_not_having_counter=$(cat tm_not_having_counter)
 
 #----------------------------------------------------------------------------------------------------------
-echo -e "\n$(date +'%a %d %b - %T') Check SFTP Backup Success"
 grep -Fx -f blacklist linux_users | while read LINE
 do
 	users_checked=$((users_checked + 1))
