@@ -4,7 +4,7 @@ timespan=1814400
 threshold_warn=0.70
 threshold_crit=0.25
 now=$(date +%s)
-#cd /home/nagios
+cd /home/nagios/check-backupstate
 #Initialize counters
 echo "0" >> tm_users_checked
 echo "0" >> tm_active_backup_counter
